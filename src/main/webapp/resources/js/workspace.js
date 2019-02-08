@@ -1,0 +1,1 @@
+var workspaceApp =  angular.module("workspaceApp",['angular-bootstrap-modal','ui.bootstrap','commonServiceModule']);

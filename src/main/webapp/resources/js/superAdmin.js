@@ -1,0 +1,1 @@
+var superAdminApp =  angular.module("superAdminApp",[]);

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Repository and Service layers -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder location="classpath:spring/app.properties"
+		system-properties-mode="OVERRIDE" />
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<mvc:annotation-driven />
+
+	<!-- enables scanning for @Transactional annotations -->
+<!-- 	<tx:annotation-driven /> -->
+		<tx:annotation-driven transaction-manager="devinfoTransactionManager"/>
+
+	<!-- =========================Component Registration ========================= -->
+
+	
+	<context:component-scan base-package="org.sdrc.cysdrf.web" />
+	<context:component-scan base-package="org.sdrc.cysdrf.service" />
+	<context:component-scan base-package="org.sdrc.cysdrf.util" />
+	<context:component-scan base-package="org.sdrc.core" />
+
+	<!-- ========================= End of Component Registration ========================= -->
+
+
+	<!-- ========================= Data Repository Configuration ========================= -->
+
+	<bean
+		class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	
+
+	<jpa:repositories base-package="org.sdrc.cysdrf.repository.springdatajpa"
+		entity-manager-factory-ref="entityManagerFactory"
+		transaction-manager-ref="transactionManager" />
+		
+	<jpa:repositories base-package="org.sdrc.devinfo.repository.springdatajpa"
+		entity-manager-factory-ref="devinfoEntityManagerFactory"
+		transaction-manager-ref="devinfoTransactionManager" />
+		
+		
+		
+		
+		
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		p:dataSource-ref="dataSource">
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+				p:database="${jpa.database}" p:showSql="${jpa.showSql}" />
+		</property>
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="hibernate.dialect" value="${hibernate.dialect}" />
+				<entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}" />
+				<entry key="hibernate.show_sql" value="${hibernate.show_sql}" />
+			</map>
+		</property>
+
+		<property name="packagesToScan">
+			<list>
+				<value></value>
+			</list>
+		</property>
+	</bean>
+	
+		<bean id="devinfoEntityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		p:dataSource-ref="devinfoDataSource">
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+				p:database="${jpa.database}" p:showSql="${jpa.showSql}" />
+		</property>
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="hibernate.dialect" value="${hibernate.dialect}" />
+				<entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}" />
+				<entry key="hibernate.show_sql" value="${hibernate.show_sql}" />
+			</map>
+		</property>
+		<property name="persistenceUnitName" value="devinfo" />
+		<property name="packagesToScan">
+			<list>
+				<value>org.sdrc.devinfo.domain</value>
+			</list>
+		</property>
+	</bean>
+
+
+<!-- 	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"> -->
+<!-- 		<property name="entityManagerFactory" ref="entityManagerFactory" /> -->
+<!-- 		<qualifier value="account" /> -->
+<!-- 	</bean> -->
+	
+	
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory"/>
+		<qualifier value="webTransactionManager" ></qualifier>
+	</bean>
+		
+	<bean id="devinfoTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+		p:entityManagerFactory-ref="devinfoEntityManagerFactory" />	
+
+<!-- 	<bean id="devinfoTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"> -->
+<!-- 			<property name="entityManagerFactory" ref="devinfoEntityManagerFactory"/> -->
+<!-- 			<qualifier value="devinfoTransactionManager" ></qualifier> -->
+<!-- 	</bean> -->
+			
+	
+
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url"
+			value="${jdbc.url};databaseName=${jdbc.databaseName}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	
+	<bean id="devinfoDataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.devinfo.driverClassName}" />
+		<property name="url"
+			value="${jdbc.devinfo.url};databaseName=${jdbc.devinfo.databaseName}" />
+		<property name="username" value="${jdbc.devinfo.username}" />
+		<property name="password" value="${jdbc.devinfo.password}" />
+	</bean>
+	
+	
+	
+	
+	
+
+	<!-- =========================End of Data Repository Configuration ========================= -->
+
+
+	<!-- ========================= Message RESOURCE DEFINITIONS ========================= -->
+
+	<bean id="applicationMessageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="spring/app" />
+
+		
+	<bean id="messageSourceNotification"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/notification" />
+		
+		
+	<bean id="delimeterMessageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/delimeter" />	
+		
+		
+	<bean id="colourMessageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/colour" />		
+		
+	<bean id="messages"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/messages" />
+
+	<bean id="subSectorIusListMessage"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/subsectorIusList" />
+		
+		<bean id="cmsMessage"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/cmsMessage" />
+		
+	<!-- =========================End of Message RESOURCE DEFINITIONS ========================= -->
+
+	<!-- Spring Internationalizations -->
+	
+	
+	<bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basename" value="classpath:messages" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+
+
+	<!-- ========================= Start Security-Context configuration ========================= -->
+
+	<bean id="passwordEncoder"
+		class="org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder">
+		<constructor-arg value="MD5" />
+	</bean>
+	<!-- ========================= End Security-Context configuration ========================= -->
+	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/*" />
+			<bean class="org.sdrc.core.AuthorizeInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/cysd/*" />
+			<bean class="org.sdrc.core.AuthorizeInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/cms/*" />
+			<bean class="org.sdrc.core.AuthorizeInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+</beans>

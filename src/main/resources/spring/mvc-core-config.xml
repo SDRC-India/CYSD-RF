@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- - DispatcherServlet application context for esamikshya web tier. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+	<bean
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<!-- <property name="contentNegotiationManager" ref="cnManager" /> -->
+
+		<property name="viewResolvers">
+			<list>
+				<!-- Default viewClass: JSTL view (JSP with html output) -->
+				<bean
+					class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+					<!-- Example: a logical view name of 'vets' is mapped to '/WEB-INF/jsp/vets.jsp' -->
+					<property name="prefix" value="/WEB-INF/views/" />
+					<property name="suffix" value=".jsp" />
+				</bean>
+
+				<!-- Used here for 'xml' and 'atom' views -->
+				<bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- all resources inside folder src/main/webapp/resources are mapped so 
+		they can be refered to inside JSP files (see header.jsp for more details) -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!-- uses WebJars so Javascript and CSS libs can be declared as Maven dependencies 
+		(Bootstrap, jQuery...) -->
+	<mvc:resources mapping="/webjars/**"
+		location="classpath:/META-INF/resources/webjars/" />
+		
+	<mvc:view-controller path="dashboard" view-name="dashboard" />
+	<mvc:view-controller path="cms" view-name="contentManagement" />
+	<mvc:view-controller path="about" view-name="about" />
+	<mvc:view-controller path="operation" view-name="operation" />
+	
+
+		
+<!-- 	<mvc:view-controller path="/" view-name="home" /> -->
+<!-- 	<mvc:view-controller path="/partAform" view-name="partAform" /> -->
+<!-- 	<mvc:view-controller path="/partBform" view-name="partBform" /> -->
+	<mvc:view-controller path="/login" view-name="login" />
+<!-- 	<mvc:view-controller path="/vaccReceive" view-name="vaccReceive" /> -->
+<!-- 	<mvc:view-controller path="/vaccDiscard" view-name="vaccDiscard" /> -->
+
+							<!-- CMS path -->
+	<mvc:view-controller path="cms/view-reports" view-name="cms/view-reports" />
+	<mvc:view-controller path="cms/upload-report" view-name="cms/upload-report" />
+	<mvc:view-controller path="cms/manage-section" view-name="cms/manage-section" />
+
+
+	<!-- <mvc:view-controller path="/" view-name="welcome" /> -->
+	<!-- serve static resources (*.html, ...) from src/main/webapp/ -->
+<!-- 	<mvc:default-servlet-handler /> -->
+
+	<!-- - Message source for this context, loaded from localized "messages_xx" 
+		files. - Files are stored inside src/main/resources -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource"
+		p:basename="messages/messages" />
+
+
+	<!-- - This bean resolves specific types of exceptions to corresponding 
+		logical - view names for error views. -->
+	<bean
+		class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<!-- view name resolved using bean of type InternalResourceViewResolver 
+			(declared in mvc-view-config.xml) -->
+		<property name="defaultErrorView" value="exception" />
+		<!-- results into 'WEB-INF/jsp/exception.jsp' -->
+		<property name="warnLogCategory" value="warn" />
+		<!-- needed otherwise exceptions won't be logged anywhere -->
+	</bean>
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- one of the properties available; the maximum file size in bytes -->
+		<property name="maxUploadSize" value="15730000" />
+	</bean>
+
+
+	<!-- Configure to plugin JSON as request and response in method handler -->
+	<bean
+		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<ref bean="jsonMessageConverter" />
+			</list>
+		</property>
+	</bean>
+<!-- <bean id="auhorizeInterceptor" class="org.sdrc.bvlms.core.AuthorizeInterceptor" /> -->
+<!-- 	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"> -->
+<!-- 		<property name="interceptors"> -->
+<!-- 			<list> -->
+<!-- 				<ref bean="auhorizeInterceptor" /> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+
+	<!-- Configure bean to convert JSON to POJO and vice versa -->
+	<bean id="jsonMessageConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+	</bean>
+	
+</beans>
